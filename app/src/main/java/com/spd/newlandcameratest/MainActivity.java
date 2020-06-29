@@ -123,7 +123,8 @@ public class MainActivity extends AppCompatActivity {
             //等待接收数据
             while (isCodeCamerOpen) {
                 try {
-                    byte[] info = serialPortSpd.ReadSerial(fd, 10000, true);
+                    //byte[] info = serialPortSpd.ReadSerial(fd, 10000, true);
+                    byte[] info = serialPortSpd.ReadSerial(fd, 1024);
                     if (info != null) {
                         String decodeData = new String(info, "utf8");
                         /*for (String s : codeList) {
