@@ -9,8 +9,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemProperties;
-import android.serialport.DeviceControlSpd;
-import android.serialport.SerialPortSpd;
+import android.serialport.DeviceControl;
+import android.serialport.SerialPort;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
     //新大陆解码摄像头是否开启并联通标志
     private static boolean isCodeCamerOpen = false;
     private static int fd = -1;
-    SerialPortSpd serialPortSpd = null;
+    private SerialPort mSerialPort = null;
     private static SoundPool sp; //声音池
     private static Map<Integer, Integer> mapSRC;
     List<String> codeList = new ArrayList<>();
@@ -36,8 +36,11 @@ public class MainActivity extends AppCompatActivity {
     TextView showInfo;
 
     //上下电
-    private DeviceControlSpd deviceControlSpd;
-    MyThread readThread;
+    private DeviceControl deviceControlSpd;
+    ReadThread readThread;
+    private String readstr = "";
+    private byte[] tmpbuf = new byte[1024];
+    private int readed = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,12 +68,12 @@ public class MainActivity extends AppCompatActivity {
         Objects.requireNonNull(am).setStreamVolume(2, 35, 0);
 
         //初始化新大陆解码摄像头
-        serialPortSpd = new SerialPortSpd();
+        mSerialPort = new SerialPort();
         try {
             //修改实际名称和波特率
-            serialPortSpd.OpenSerial("/dev/ttyMT0", 9600);
-            fd = serialPortSpd.getFd();
-            deviceControlSpd = new DeviceControlSpd(DeviceControlSpd.PowerType.NEW_MAIN, 46, 47);
+            mSerialPort.OpenSerial("/dev/ttyMT0", 9600);
+            fd = mSerialPort.getFd();
+            deviceControlSpd = new DeviceControl(DeviceControl.PowerType.NEW_MAIN, 46, 47);
             deviceControlSpd.PowerOnDevice();
 
             handler.postDelayed(() -> {
@@ -89,12 +92,15 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         SystemProperties.set("12", "sd");
+
+        readThread = new ReadThread();
+        readThread.start();
     }
 
     @Override
     protected void onDestroy() {
-        if (serialPortSpd != null) {
-            serialPortSpd.CloseSerial(fd);
+        if (mSerialPort != null) {
+            mSerialPort.CloseSerial(fd);
         }
         try {
             deviceControlSpd.newSetGpioOff(19);
@@ -111,12 +117,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        readThread = new MyThread();
-        readThread.start();
+
 
     }
 
-    class MyThread extends Thread {
+    class ReadThread extends Thread {
         @Override
         public void run() {
             super.run();
@@ -124,9 +129,17 @@ public class MainActivity extends AppCompatActivity {
             while (isCodeCamerOpen) {
                 try {
                     //byte[] info = serialPortSpd.ReadSerial(fd, 10000, true);
-                    byte[] info = serialPortSpd.ReadSerial(fd, 1024);
-                    if (info != null) {
-                        String decodeData = new String(info, "utf8");
+                    try {
+                        tmpbuf = mSerialPort.ReadSerial(mSerialPort.getFd(), 1024);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    if (tmpbuf != null) {
+                        readed = tmpbuf.length;
+                        byte[] readbuf = new byte[readed];
+                        System.arraycopy(tmpbuf, 0, readbuf, 0, readed);
+
+                        String decodeData = new String(readbuf, "utf8");
                         /*for (String s : codeList) {
                             if (decodeData.equals(s)) {
                                 isHave = true;
@@ -184,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
 
                     }
 
-                } catch (UnsupportedEncodingException e) {
+                } catch (SecurityException | UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
             }
