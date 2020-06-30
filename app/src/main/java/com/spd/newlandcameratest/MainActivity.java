@@ -8,7 +8,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.SystemProperties;
 import android.serialport.DeviceControl;
 import android.serialport.SerialPort;
 import android.util.Log;
@@ -25,9 +24,6 @@ import java.util.Map;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
-    //新大陆解码摄像头是否开启并联通标志
-    private static boolean isCodeCamerOpen = false;
-    private static int fd = -1;
     private SerialPort mSerialPort = null;
     private static SoundPool sp; //声音池
     private static Map<Integer, Integer> mapSRC;
@@ -72,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
         try {
             //修改实际名称和波特率
             mSerialPort.OpenSerial("/dev/ttyMT0", 9600);
-            fd = mSerialPort.getFd();
             deviceControlSpd = new DeviceControl(DeviceControl.PowerType.NEW_MAIN, 46, 47);
             deviceControlSpd.PowerOnDevice();
 
@@ -82,25 +77,26 @@ public class MainActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                isCodeCamerOpen = true;
                 Log.w("codecameraopen", "二维码扫描头初始化成功");
             }, 1000);
-
+            if (mSerialPort != null) {
+                readThread = new ReadThread();
+                readThread.start();
+            }
 
         } catch (IOException e) {
             Log.w("codecameraopen", "二维码扫描头初始化失败");
             e.printStackTrace();
         }
-        SystemProperties.set("12", "sd");
+        //SystemProperties.set("12", "sd");
 
-        readThread = new ReadThread();
-        readThread.start();
+
     }
 
     @Override
     protected void onDestroy() {
         if (mSerialPort != null) {
-            mSerialPort.CloseSerial(fd);
+            mSerialPort.CloseSerial(mSerialPort.getFd());
         }
         try {
             deviceControlSpd.newSetGpioOff(19);
@@ -117,8 +113,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-
     }
 
     class ReadThread extends Thread {
@@ -126,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
         public void run() {
             super.run();
             //等待接收数据
-            while (isCodeCamerOpen) {
+            while (!isInterrupted()) {
                 try {
                     //byte[] info = serialPortSpd.ReadSerial(fd, 10000, true);
                     try {
