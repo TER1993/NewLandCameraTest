@@ -124,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     //byte[] info = serialPortSpd.ReadSerial(fd, 10000, true);
                     try {
-                        tmpbuf = mSerialPort.ReadSerial(mSerialPort.getFd(), 1024);
+                        tmpbuf = mSerialPort.ReadSerial(mSerialPort.getFd(), 1024, 120);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
