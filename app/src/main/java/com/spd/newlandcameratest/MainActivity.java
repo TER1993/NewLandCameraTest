@@ -115,6 +115,9 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
     }
 
+    private String thisdecodeData = "";
+    private String lastdecodeData = "";
+
     class ReadThread extends Thread {
         @Override
         public void run() {
@@ -132,6 +135,20 @@ public class MainActivity extends AppCompatActivity {
                         readed = tmpbuf.length;
                         byte[] readbuf = new byte[readed];
                         System.arraycopy(tmpbuf, 0, readbuf, 0, readed);
+//                        //处理条码末尾0x0d判断数据完整性。
+//                        if (readbuf[readed - 1] == 0x0d) {
+//                            System.arraycopy(tmpbuf, 0, readbuf, 0, readed - 1);
+//                            if (!"".equals(lastdecodeData)) {
+//                                thisdecodeData = lastdecodeData + new String(readbuf, "utf8");
+//                                lastdecodeData = "";
+//                            }
+//                        } else {
+//                            System.arraycopy(tmpbuf, 0, readbuf, 0, readed);
+//                            lastdecodeData = lastdecodeData + new String(readbuf, "utf8");
+//                            return;
+//                        }
+//
+//                        String decodeData = thisdecodeData;
 
                         String decodeData = new String(readbuf, "utf8");
                         /*for (String s : codeList) {
