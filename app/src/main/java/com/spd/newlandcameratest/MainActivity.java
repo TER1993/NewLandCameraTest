@@ -12,6 +12,7 @@ import android.serialport.DeviceControl;
 import android.serialport.SerialPort;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -38,11 +39,14 @@ public class MainActivity extends AppCompatActivity {
     private byte[] tmpbuf = new byte[1024];
     private int readed = 0;
 
+    private ToggleButton button1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         showInfo = findViewById(R.id.showInfo);
+        button1 = findViewById(R.id.button1);
         //初始化声音池
         if (Build.VERSION.SDK_INT >= 21) {
             SoundPool.Builder builder = new SoundPool.Builder();
@@ -91,6 +95,17 @@ public class MainActivity extends AppCompatActivity {
         //SystemProperties.set("12", "sd");
 
 
+        button1.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            try {
+                if (isChecked) {
+                    deviceControlSpd.newSetGpioOn(47);
+                } else {
+                    deviceControlSpd.newSetGpioOff(47);
+                }
+            }catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override
