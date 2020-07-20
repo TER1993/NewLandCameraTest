@@ -98,7 +98,10 @@ public class MainActivity extends AppCompatActivity {
         button1.setOnCheckedChangeListener((buttonView, isChecked) -> {
             try {
                 if (isChecked) {
-                    deviceControlSpd.newSetGpioOn(74);
+
+
+                    scan();
+
 
 //                    try {
 //                        //File ScanDeviceName = new File("proc/driver/scan");
@@ -117,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
 //                    }
 
                 } else {
-//
+                    handler.removeCallbacks(runnable);
 //                    try {
 //                        //File ScanDeviceName = new File("proc/driver/scan");
 //                        File mScanDeviceName = new File("/sys/class/misc/uartscan/trigger");
@@ -142,8 +145,30 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+
+    private void scan() {
+
+        handler.postDelayed(runnable, 1000);
+
+    }
+
+    Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                deviceControlSpd.newSetGpioOn(74);
+                deviceControlSpd.newSetDir(74, 0);
+                deviceControlSpd.newSetGpioOff(74);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            scan();
+        }
+    };
+
     @Override
     protected void onDestroy() {
+        handler.removeCallbacks(runnable);
         if (mSerialPort != null) {
             mSerialPort.CloseSerial(mSerialPort.getFd());
         }
