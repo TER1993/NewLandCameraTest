@@ -8,7 +8,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.serialport.DeviceControl;
 import android.serialport.SerialPort;
 import android.util.Log;
 import android.widget.TextView;
@@ -33,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
     TextView showInfo;
 
     //上下电
-    private DeviceControl deviceControlSpd;
+    //private DeviceControl deviceControlSpd;
     ReadThread readThread;
     private String readstr = "";
     private byte[] tmpbuf = new byte[1024];
@@ -72,8 +71,8 @@ public class MainActivity extends AppCompatActivity {
         try {
             //修改实际名称和波特率
             mSerialPort.OpenSerial("/dev/ttyMT1", 9600);
-            deviceControlSpd = new DeviceControl(DeviceControl.PowerType.NEW_MAIN, 12, 74);
-            deviceControlSpd.PowerOnDevice();
+            //deviceControlSpd = new DeviceControl(DeviceControl.PowerType.NEW_MAIN, 12, 74);
+            //deviceControlSpd.PowerOnDevice();
 
             handler.postDelayed(() -> {
 //                try {
@@ -137,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
 //                        e.printStackTrace();
 //                    }
 
-                    deviceControlSpd.newSetGpioOff(74);
+                    //deviceControlSpd.newSetGpioOff(74);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -155,13 +154,13 @@ public class MainActivity extends AppCompatActivity {
     Runnable runnable = new Runnable() {
         @Override
         public void run() {
-            try {
-                deviceControlSpd.newSetGpioOn(74);
-                deviceControlSpd.newSetDir(74, 0);
-                deviceControlSpd.newSetGpioOff(74);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                deviceControlSpd.newSetGpioOn(74);
+//                deviceControlSpd.newSetDir(74, 0);
+//                deviceControlSpd.newSetGpioOff(74);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
             scan();
         }
     };
@@ -172,12 +171,12 @@ public class MainActivity extends AppCompatActivity {
         if (mSerialPort != null) {
             mSerialPort.CloseSerial(mSerialPort.getFd());
         }
-        try {
-            // deviceControlSpd.newSetGpioOff(19);
-            deviceControlSpd.PowerOffDevice();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            // deviceControlSpd.newSetGpioOff(19);
+//            deviceControlSpd.PowerOffDevice();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         if (readThread != null) {
             readThread.interrupt();
         }
