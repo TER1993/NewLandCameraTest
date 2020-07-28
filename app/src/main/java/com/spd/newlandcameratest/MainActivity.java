@@ -71,16 +71,16 @@ public class MainActivity extends AppCompatActivity {
         mSerialPort = new SerialPort();
         try {
             //修改实际名称和波特率
-            mSerialPort.OpenSerial("/dev/ttyMT0", 9600);
-            deviceControlSpd = new DeviceControl(DeviceControl.PowerType.NEW_MAIN, 46, 47);
+            mSerialPort.OpenSerial("/dev/ttyMT1", 9600);
+            deviceControlSpd = new DeviceControl(DeviceControl.PowerType.NEW_MAIN, 54);
             deviceControlSpd.PowerOnDevice();
 
             handler.postDelayed(() -> {
-                try {
-                    deviceControlSpd.newSetGpioOn(19);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    deviceControlSpd.newSetGpioOn(19);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
                 Log.w("codecameraopen", "二维码扫描头初始化成功");
             }, 1000);
             if (mSerialPort != null) {
@@ -98,9 +98,9 @@ public class MainActivity extends AppCompatActivity {
         button1.setOnCheckedChangeListener((buttonView, isChecked) -> {
             try {
                 if (isChecked) {
-                    deviceControlSpd.newSetGpioOn(47);
+                    deviceControlSpd.newSetGpioOn(69);
                 } else {
-                    deviceControlSpd.newSetGpioOff(47);
+                    deviceControlSpd.newSetGpioOff(69);
                 }
             }catch (Exception e) {
                 e.printStackTrace();
@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
             mSerialPort.CloseSerial(mSerialPort.getFd());
         }
         try {
-            deviceControlSpd.newSetGpioOff(19);
+            //deviceControlSpd.newSetGpioOff(19);
             deviceControlSpd.PowerOffDevice();
         } catch (IOException e) {
             e.printStackTrace();
